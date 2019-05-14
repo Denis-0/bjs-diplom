@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 
 class Profile {
@@ -40,7 +40,7 @@ class Profile {
 			});
 
 		} else {
-			console.log(`User ${this.username} doesnot exist`);
+			console.log(`User ${this.username} not exists`);
 		}
 	}
 
@@ -65,7 +65,7 @@ class Profile {
 
 		let currencyChange = (targetAmount * stocks[99][`NETCOIN_${fromCurrency}`]);
 		if (currencyChange > this.wallet[fromCurrency]) {
-			console.log(`Error during converting money: not enough money to complete the operation`);
+			console.log(`Error during converting money: not enough money to complete`);
 
 		} else {
 			return ApiConnector.convertMoney({fromCurrency, targetCurrency, targetAmount}, (err, data) => {
@@ -73,13 +73,13 @@ class Profile {
 					this.wallet[fromCurrency] = this.wallet[fromCurrency] - currencyChange;
 					this.wallet[targetCurrency] = targetAmount;
 
-					let profile1 = 'Converted to coins';
-					let profile2 = {
+					let file1 = 'Converted to coins';
+					let file2 = {
 						name: this.name,
 						wallet: this.wallet,
-						username: this.username
+						username: this.username,
 					}
-					console.log(profile1, profile2);
+					console.log(file1, file2);
 
 					callback();
 				} else {
@@ -125,7 +125,9 @@ function getStocks(callback) {
 	});
 }
 
-getStocks(function() {});
+getStocks(function() {
+	main();
+});
 
 function main() {
     const Ivan = new Profile({
@@ -160,5 +162,6 @@ function main() {
     });
    
 }
-main();
+
+
 
