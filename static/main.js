@@ -7,41 +7,34 @@ class Profile {
 		this.name = name;
 		this.password = password;
 		this.wallet = {};
-		this.isCreated = false;
-		this.isLogged = false;
+		
 	}
 
 	createUser(callback) {
-		console.log(`Creating user ${this.username}`);
-
-		return ApiConnector.createUser(this, (err, data) => {
-			if (data) {
-				this.isCreated = true;
-				console.log(`${this.name.firstName} is created!`);
-				callback();
-			} else {
-				console.log(`Failed to create user ${this.name.firstName}`);
-			}
-		});
+		return ApiConnector.createUser(
+		{
+			username: this.username,
+			name: this.name,
+			password: this.password,
+		}, 
+		(err, data) => {
+			console.log(`Creating user ${this.username}`);
+			callback(err, data);
+		}
+		);
 	}
 
 	loginUser(callback) {
-		if (this.isCreated === true) {
+		return ApiConnector.performLogin(
+		{
+			username: this.username, password: this.password
+		},
+		(err, data) => {
 			console.log(`Authorizing user ${this.username}`);
-
-			return ApiConnector.loginUser(this, (err, data) => {
-				if (data) {
-					this.isLogged = true;
-					console.log(`${this.name.firstName} is authorized!`);
-					callback();
-				} else {
-					console.log(`Failed to authorize user. Please try again.`);
-				}
-			});
-
-		} else {
-			console.log(`User ${this.username} not exists`);
+			callback(err, data);
 		}
+		);
+
 	}
 
 	addMoney({currency, amount}, callback) {
@@ -126,42 +119,53 @@ function getStocks(callback) {
 }
 
 getStocks(function() {
-	main();
+	
 });
 
 function main() {
-    const Ivan = new Profile({
-        username: 'ivan',
-        name: {firstName: 'Ivan', lastName: 'Chernyshev'},
-        password: 'ivanpass',
-    });
+	const Ivan = new Profile({
+		username: 'ivan',
+		name: {firstName: 'Ivan', lastName: 'Chernyshev'},
+		password: 'ivanpass',
+	});
 
-    const Petya = new Profile({
-        username: 'petya',
-        name: {firstName: 'Petya', lastName: 'Chernyshev'},
-        password: 'petyapass',
-    });
-    
-    Ivan.createUser(function() {
-        Ivan.loginUser(function() {
-            Ivan.addMoney({currency: 'EUR', amount: 500000}, function() {
-                Ivan.convertMoney({fromCurrency: 'EUR', targetCurrency: 'NETCOIN', targetAmount: 1000}, function() {
-                    Petya.createUser(function() {
-                        Ivan.transferMoney({to: 'Petya', amount: 1000}, function({to, amount}) {                            
-                            if (Petya.wallet.NETCOIN > 0) {                                      
-                                Petya.wallet.NETCOIN += amount;                                   
-                            } else {
-                                Petya.wallet.NETCOIN = amount;                                   
-                            }                                               
-                            console.log(`${Petya.name.firstName} has got ${amount} NETCOINS`);   
-                        });
-                    });
-                });
-            });
-        });
-    });
-   
+	const Petya = new Profile({
+		username: 'petya',
+		name: {firstName: 'Petya', lastName: 'Chernyshev'},
+		password: 'petyapass',
+	});
+
+	Ivan.createUser(function(){
+		Ivan.loginUser(function(){
+			Ivan.addMoney({currency: 'EUR', amount: 500000}, (err, data) => {
+				if (err) {
+					console.error('Error during adding money to Ivan');
+				} else {
+					console.log(`Added 500000 euros to Ivan`);
+				}
+
+			});
+		});
+	});
+
+
+// Ivan.createUser(function() {
+//         Ivan.performLogin(function() {
+//             Ivan.addMoney({currency: 'EUR', amount: 500000}, function() {
+//                 Ivan.convertMoney({fromCurrency: 'EUR', targetCurrency: 'NETCOIN', targetAmount: 2000}, function() {
+//                     Petya.createUser(function() {
+//                         Ivan.transferMoney({to: 'petya', amount: 1000}, function({to, amount}) {                            
+//                             if (Petya.wallet.NETCOIN > 0) {                                      
+//                                 Petya.wallet.NETCOIN += amount;                                  
+//                             } else {
+//                                 Petya.wallet.NETCOIN = amount;                                   
+//                             }                                               
+//                             console.log(`${Petya.name.firstName} has got ${amount} NETCOINS`);   
+//                         });
+//                     });
+//                 });
+//             });
+//         });
+//     });
 }
-
-
-
+main();
