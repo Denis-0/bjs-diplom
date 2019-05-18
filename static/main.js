@@ -2,12 +2,13 @@
 
 
 class Profile {
-	constructor({username, name, password}) {
+	constructor({username, name: { firstName, lastName }, password}) {
 		this.username = username;
-		this.name = name;
+		this.name = {
+			firstName,
+			lastName
+		};
 		this.password = password;
-		this.wallet = {};
-		
 	}
 
 	createUser(callback) {
@@ -38,14 +39,12 @@ class Profile {
 	}
 
 	addMoney({currency, amount}, callback) {
-		if (this.isLogged === true) {
-			console.log(`Adding ${amount} of ${currency} to ${this.username}`);
-
-			return ApiConnector.addMoney({currency, amount}, (err, data) => {
+		return ApiConnector.addMoney({currency, amount}, 
+			(err, data) => {
 				if (data) {
 					this.wallet[currency] = amount;
 					console.log(`Added ${amount} of ${currency} to ${this.username}`);
-					callback();
+					callback(err, data);
 				} else {
 					console.log(`Error during adding money to ${this.name.firstName}`);
 				}
@@ -53,7 +52,8 @@ class Profile {
 		}
 	}
 
-	convertMoney({fromCurrency, targetCurrency, targetAmount}, callback) {        
+
+	convertMoney({fromCurrency, targetCurrency, targetAmount}, callback)      
 		console.log(`Converting ${fromCurrency} to ${targetAmount} Netcoins`);
 
 		let currencyChange = (targetAmount * stocks[99][`NETCOIN_${fromCurrency}`]);
@@ -61,7 +61,8 @@ class Profile {
 			console.log(`Error during converting money: not enough money to complete`);
 
 		} else {
-			return ApiConnector.convertMoney({fromCurrency, targetCurrency, targetAmount}, (err, data) => {
+			return ApiConnector.convertMoney({fromCurrency, targetCurrency, targetAmount}, 
+				(err, data) => {
 				if (data) {
 					this.wallet[fromCurrency] = this.wallet[fromCurrency] - currencyChange;
 					this.wallet[targetCurrency] = targetAmount;
@@ -80,7 +81,7 @@ class Profile {
 				}
 			});
 		}        
-	}
+	
 
 	transferMoney({to, amount}, callback) {
 		console.log(`Transfering ${amount} of Netcoins to ${to}`);
@@ -99,7 +100,8 @@ class Profile {
 			console.log(`Not enough money to complete the operation`);
 		}
 	}
-}
+
+
 
 let stocks = [];
 
@@ -111,16 +113,14 @@ function getStocks(callback) {
 			for (let i = 0; i < data.length; i++) {
 				stocks[i] = data[i];
 			}
-			callback();
+			callback(err, data);
 		} else {
 			console.log(`Error during getting Stocks info`);
 		}  
 	});
 }
 
-getStocks(function() {
-	
-});
+getStocks(callback);
 
 function main() {
 	const Ivan = new Profile({
@@ -135,18 +135,33 @@ function main() {
 		password: 'petyapass',
 	});
 
-	Ivan.createUser(function(){
-		Ivan.loginUser(function(){
-			Ivan.addMoney({currency: 'EUR', amount: 500000}, (err, data) => {
+	Ivan.createUser( callback: (err, data) => {
+		if (err) {
+			console.error('Ошибка создания пользователя');
+		} else {
+			console.log(`Создан персонаж ${Ivan.username}`);
+			Ivan.loginUser( callback: (err, data) => {
 				if (err) {
-					console.error('Error during adding money to Ivan');
+					console.error('Пользователь не авторизован');
 				} else {
-					console.log(`Added 500000 euros to Ivan`);
+					console.log(`Пользователь ${Ivan.username} авторизован на сервере`);
+					Petya.createUser( callback: (err, data) =>{
+						if (err) {
+							console.error('Ошибка создания пользователя');
+						} else {
+							console.log(`Создан персонаж ${Petya.username}`);
+							Petya.loginUser (callback: (err, data) =>{
+								console.error('Пользователь не авторизован');
+							}) else {
+								console.log(`Пользователь ${Petya.username} авторизован на сервере`);
+							}
+						}
+					})
 				}
-
-			});
-		});
-	});
+			})
+			}
+		}
+	})
 
 
 // Ivan.createUser(function() {
